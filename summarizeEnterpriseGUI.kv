@@ -42,6 +42,9 @@ PageManager:
                     pos: self.pos
                     radius: [58]
 
+            pos_hint: {'center_x':0.5}
+            size_hint:(0.5,1)
+
 
             ###########################################
             #Text properties################
@@ -76,29 +79,33 @@ PageManager:
         size: root.width, root.height
         cols: 2
 
-        padding: 50
-        spacing: 20
+        padding: 20
+        spacing: 10
 
         # text box where user writes what he/she wants to summarize
         TextInput:
             id: userWrittenText
             multiline:True
             color: (0,0,0,0)
-            #size_hint: (0.5,1)
-            size_hint_y:None
-            width: 300
-            height: 450
+            pos_hint: {'center_x':0.5}
+            size_hint:(0.5,7)
+            #size_hint_y:None
+            #width: 300
+            #height: 450
         ############################################################
 
         # label where summarized version appears
         TextInput:
             id: summarized_label_id
             multiline:True
-            color: (0,0,0,0)
-            #size_hint: (0.5,1)
-            size_hint_y:None
-            width: 300
-            height: 450
+            foreground_color: (1,1,1)
+            pos_hint: {'center_x':0.5}
+            size_hint:(0.5,7)
+            background_normal:'' #to make color better
+            background_color: utils.get_color_from_hex('#000000')
+            #size_hint_y:None
+            #width: 300
+            #height: 450
         #############################################################
         GridLayout:
             size: root.width, root.height
@@ -116,9 +123,11 @@ PageManager:
                         size: self.size
                         pos: self.pos
                         radius: [30]
-                size_hint_y:None
-                height: 50
-                width: 200
+                pos_hint: {'center_x':0.5}
+                size_hint:(1,5)
+                #size_hint_y:None
+                #height: 50
+                #width: 200
                 bold: True
                 color: (0,0,0)
 
@@ -133,13 +142,16 @@ PageManager:
             #    bold: True
             #    color: (0,0,0)
 
-            TextInput:
-                id: CompressionRatetxt
-                multiline:False
-                color: (0,0,0,0)
-                size_hint_y:None
-                height: 50
-                width: 200
+            BoxLayout:
+                Slider:
+                    id: slider
+                    min: 10
+                    max: 100
+                    step: 1
+                    orientation: 'horizontal'
+
+                Label:
+                    text: str(slider.value)
 
 
         #######################################################################
@@ -159,36 +171,37 @@ PageManager:
                         size: self.size
                         pos: self.pos
                         radius: [30]
-                size_hint_y:None
-                height: 50
-                width: 200
+                pos_hint: {'center_x':0.5}
+                size_hint:(1,5)
 
             Label:
                 id: compression_Ratio_Label_ID
                 text: ""
                 canvas.before:
                     Color:
-                        rgba:(0, 0, 0,1)
+                        rgba:(0, 0, 0, 1)
                     RoundedRectangle:
                         size: self.size
                         pos: self.pos
                         radius: [30]
                 color: (1,1,1)
-                size_hint_y:None
-                height: 50
-                width: 200
+                pos_hint: {'center_x':0.5}
+                size_hint:(1,5)
 
         ##############################################3
         Button:
-            text: "test"
+            text: "Summarize"
             on_press: root.test()
+            pos_hint: {'center_x':0.5}
+            size_hint:(1,0.5)
         ##############################################3
         Button:
             text: "Back to the Main Page"
             on_release:
                 root.manager.current = "mainPage"
                 root.manager.transition.direction = "right"
-
+            pos_hint: {'center_x':0.5}
+            size_hint:(1,0.5)
 
 
 ############################################################################################################################
@@ -205,7 +218,7 @@ PageManager:
         ###################################################################
         FileChooserIconView:
             id: fileChooser
-            path:"D:\PyCharm Projects\GP testing"
+            path:"C:/Users/Ramez/PycharmProjects/GP"
             on_selection: filePage_ID.selectedFile(fileChooser.selection)
 
 
@@ -231,35 +244,28 @@ PageManager:
                 width: 80
                 bold: True
                 color: (0,0,0)
+                pos_hint: {'center_x':0.5}
+                size_hint:(0.5,1)
 
             TextInput:
                 id: fileSelectedtxt
                 multiline:False
                 color: (0,0,0,0)
                 font_size: '32'
-                size_hint_y:None
-                height: 50
-                width: 200
-
-
+                pos_hint: {'center_x':0.5}
+                size_hint:(0.5,1)
 
             Button:
                 text: "Back to the Main Page"
                 on_release:
                     root.manager.current = "mainPage"
                     root.manager.transition.direction = "right"
-                size_hint_y:None
-                    height: 50
-                    width: 200
             Button:
                 text: "Summarize"
                 on_release:
                     root.manager.current = "textPage"
                     root.manager.transition.direction = "left"
 
-                size_hint_y:None
-                    height: 50
-                    width: 200
 
 ############################################################################################################################
 <UrlPage>:
@@ -282,9 +288,8 @@ PageManager:
                     size: self.size
                     pos: self.pos
                     radius: [30]
-            size_hint_y:None
-            height: 50
-            width: 200
+            pos_hint: {'center_x':0.5}
+            size_hint:(0.5,1)
             bold: True
             color: (0,0,0)
 
@@ -293,10 +298,8 @@ PageManager:
             multiline:False
             color: (0,0,0,0)
             font_size: '32'
-            size_hint_y:None
-            height: 50
-            width: 200
-
+            pos_hint: {'center_x':0.5}
+            size_hint:(0.5,1)
 
 
         Button:
@@ -306,18 +309,12 @@ PageManager:
                 root.manager.transition.direction = "right"
 
 
-            size_hint_y:None
-                height: 50
-                width: 200
         Button:
             text: "Summarize"
             on_release:
                 root.manager.current = "textPage"
                 root.manager.transition.direction = "left"
                 UrlPage_ID.UserUrl(urltxt.text)
-            size_hint_y:None
-                height: 50
-                width: 100
 
 
 

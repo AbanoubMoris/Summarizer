@@ -1,73 +1,46 @@
-import PyPDF2
+from transformers import AutoTokenizer, AutoModelWithLMHead
 import torch
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM,  T5Tokenizer, T5ForConditionalGeneration, T5Config
 
-def ReadingFromPDF(filename,f,l):
-    pdfFile = open(filename, "rb")
-    pdfReader = PyPDF2.PdfFileReader(pdfFile)
-    numOfPages = pdfReader.numPages
-    pdf = ""
-    for i in range(f-1,l):
-        page = pdfReader.getPage(i)
-        pdf += page.extractText()
+tokenizer = AutoTokenizer.from_pretrained("deep-learning-analytics/wikihow-t5-small")
+model = AutoModelWithLMHead.from_pretrained("deep-learning-analytics/wikihow-t5-small")
 
-    return pdf
-    pdfFile.close()
+## Move to CUDA
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+model = model.to(device)
 
-def Summarize(document):
-    model = T5ForConditionalGeneration.from_pretrained('t5-small')
-    tokenizer = T5Tokenizer.from_pretrained('t5-small')
-    device = torch.device('cpu')
-    preprocess_text = document.strip().replace("\n", " ")
-    t5_prepared_Text = "summarize: " + preprocess_text
-    tokenized_text = tokenizer.encode(t5_prepared_Text, return_tensors="pt", max_length=600, truncation=True).to(device)
-    summary_ids = model.generate(tokenized_text,
-                                 num_beams=2,
-                                 no_repeat_ngram_size=2,
-                                 min_length=10,
-                                 max_length=100,
-                                 early_stopping=False)
+text = """"
+Lack of fluids can lead to dry mouth, which is a leading cause of bad breath. Water
+can also dilute any chemicals in your mouth or gut that are causing bad breath., Studies show that
+eating 6 ounces of yogurt a day reduces the level of odor-causing compounds in the mouth. In
+particular, look for yogurt containing the active bacteria Streptococcus thermophilus or
+Lactobacillus bulgaricus., The abrasive nature of fibrous fruits and vegetables helps to clean
+teeth, while the vitamins, antioxidants, and acids they contain improve dental health.Foods that can
+be particularly helpful include:Apples — Apples contain vitamin C, which is necessary for health
+gums, as well as malic acid, which helps to whiten teeth.Carrots — Carrots are rich in vitamin A,
+which strengthens tooth enamel.Celery — Chewing celery produces a lot of saliva, which helps to
+neutralize bacteria that cause bad breath.Pineapples — Pineapples contain bromelain, an enzyme that
+cleans the mouth., These teas have been shown to kill the bacteria that cause bad breath and
+plaque., An upset stomach can lead to burping, which contributes to bad breath. Don’t eat foods that
+upset your stomach, or if you do, use antacids. If you are lactose intolerant, try lactase tablets.,
+They can all cause bad breath. If you do eat them, bring sugar-free gum or a toothbrush and
+toothpaste to freshen your mouth afterwards., Diets low in carbohydrates lead to ketosis — a state
+in which the body burns primarily fat instead of carbohydrates for energy. This may be good for your
+waistline, but it also produces chemicals called ketones, which contribute to bad breath.To stop the
+problem, you must change your diet. Or, you can combat the smell in one of these ways:Drink lots of
+water to dilute the ketones.Chew sugarless gum or suck on sugarless mints.Chew mint leaves.
+"""
 
-    output = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
-    return output
+preprocess_text = text.strip().replace("\n","")
+tokenized_text = tokenizer.encode(preprocess_text, return_tensors="pt").to(device)
 
-def Summarize2(document):
-    tokenizer = AutoTokenizer.from_pretrained("t5-base")
-    model = AutoModelForSeq2SeqLM.from_pretrained("t5-base", return_dict=True)
-    inputs = tokenizer.encode("summarize: " + document, return_tensors='pt', max_length=600, truncation=True)
-    outputs = model.generate(inputs, max_length=100, min_length=10, length_penalty=5, num_beams=2)
-    summary = tokenizer.decode(outputs[0])
-    return summary
+summary_ids = model.generate(
+            tokenized_text,
+            max_length=150,
+            num_beams=2,
+            repetition_penalty=2.5,
+            length_penalty=1.0,
+            early_stopping=True
+        )
 
-def Output(document):
-    for x in document.split('.'):
-        x = x.replace('<pad>', "")
-        x = x.replace('</s>', "")
-        x = x.strip()
-        if x != "":
-            print(x + '.')
-
-pdf = ReadingFromPDF("Assignment.pdf",1,7)
-preprocess_text = pdf.strip().replace("\n","")
-t5_prepared_Text = "summarize: "+preprocess_text
-pdf = t5_prepared_Text
-
-# pdf = ("""
-# The US has "passed the peak" on new coronavirus cases, President Donald Trump said and predicted that some states would reopen this month.
-#
-# The US has over 637,000 confirmed Covid-19 cases and over 30,826 deaths, the highest for any country in the world.
-#
-# At the daily White House coronavirus briefing on Wednesday, Trump said new guidelines to reopen the country would be announced on Thursday after he speaks to governors.
-#
-# "We'll be the comeback kids, all of us," he said. "We want to get our country back."
-#
-# The Trump administration has previously fixed May 1 as a possible date to reopen the world's largest economy, but the president said some states may be able to return to normalcy earlier than that.
-# """)
-
-# Output
-print(pdf)
-print("\nSummary 1:")
-Output(Summarize(pdf))
-print("\nSummary 2:")
-Output(Summarize2(pdf))
-
+output = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+print ("\n\nSummarized text: \n",output)
