@@ -1,12 +1,10 @@
 import speech_recognition as sr 
 import moviepy.editor as mp
 
-from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 from moviepy.editor import VideoFileClip
 
 class VideoCaptions:
 
-  input_video_path = 'video.mp4'
   output_video_path = 'converted.mp4'
   result = ''
 
@@ -16,12 +14,13 @@ class VideoCaptions:
     print(video_duration)
     return video_duration
 
-  def getChunkCaption(self):
+  def getChunkCaption(self, input_video_path):
+    input_video_path = input_video_path[0]
     i = 0
-    while i < self.getVideosDuration(self.input_video_path):
+    while i < self.getVideosDuration(input_video_path):
         
         try:
-          with VideoFileClip(self.input_video_path) as video:
+          with VideoFileClip(input_video_path) as video:
             #First 10 seconds
             new = video.subclip(i, i+9)
             new.write_videofile(self.output_video_path, audio_codec='aac')
@@ -40,12 +39,8 @@ class VideoCaptions:
 
         
   def WriteCaptionInFile(self):
-    with open('recognized.txt',mode ='w') as file: 
+    with open('recognized.txt', mode ='w') as file:
           file.write(self.result) 
           file.write("\n") 
           print("Finally ready!")
     return self.result
-
-captions = VideoCaptions()
-captions.getChunkCaption()
-print(captions.WriteCaptionInFile())

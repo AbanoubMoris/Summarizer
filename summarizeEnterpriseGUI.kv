@@ -60,7 +60,7 @@ PageManager:
                 root.manager.transition.direction = "left"
 
         Button:
-            text: "Summarize by Uploaded File"
+            text: "Summarize by Uploaded File or Video"
             on_release:
                 root.manager.current = "filePage"
                 root.manager.transition.direction = "left"
@@ -191,7 +191,7 @@ PageManager:
         ##############################################3
         Button:
             text: "Summarize"
-            on_press: root.test()
+            on_press: root.Summarize()
             pos_hint: {'center_x':0.5}
             size_hint:(1,0.5)
         ##############################################3
@@ -200,6 +200,11 @@ PageManager:
             on_release:
                 root.manager.current = "mainPage"
                 root.manager.transition.direction = "right"
+
+                userWrittenText.text = ""
+                summarized_label_id.text = ""
+                compression_Ratio_Label_ID.text = ""
+
             pos_hint: {'center_x':0.5}
             size_hint:(1,0.5)
 
@@ -219,7 +224,7 @@ PageManager:
         FileChooserIconView:
             id: fileChooser
             path:"C:/Users/Ramez/PycharmProjects/GP"
-            on_selection: filePage_ID.selectedFile(fileChooser.selection)
+            on_selection: filePage_ID.viewselecteFile(fileChooser.selection)
 
 
         ###################################################################
@@ -228,7 +233,7 @@ PageManager:
         GridLayout:
             size: root.width, root.height
             padding:20
-            spacing:50
+            spacing:20
             cols: 2
             Label:
                 text: "Your selected file is: "
@@ -251,20 +256,110 @@ PageManager:
                 id: fileSelectedtxt
                 multiline:False
                 color: (0,0,0,0)
-                font_size: '32'
+                font_size: '20'
                 pos_hint: {'center_x':0.5}
                 size_hint:(0.5,1)
+
+        ###################################################################
+        # start end page and video
+        ###################################################################
+            Label:
+                text: "Please determine the number of the start page: "
+                canvas.before:
+                    Color:
+                        rgba:(1, 1, 1,1)
+                    RoundedRectangle:
+                        size: self.size
+                        pos: self.pos
+                        radius: [30]
+                size_hint_y:None
+                height: 50
+                width: 80
+                bold: True
+                color: (0,0,0)
+                pos_hint: {'center_x':0.5}
+                size_hint:(0.5,1)
+
+            TextInput:
+                id: startPagePDFtext
+                multiline:False
+                color: (0,0,0,0)
+                font_size: '20'
+                pos_hint: {'center_x':0.5}
+                size_hint:(0.5,1)
+            Label:
+                text: "Please determine the number of the end page: "
+                canvas.before:
+                    Color:
+                        rgba:(1, 1, 1,1)
+                    RoundedRectangle:
+                        size: self.size
+                        pos: self.pos
+                        radius: [30]
+                size_hint_y:None
+                height: 50
+                width: 80
+                bold: True
+                color: (0,0,0)
+                pos_hint: {'center_x':0.5}
+                size_hint:(0.5,1)
+
+            TextInput:
+                id: endPagePDFtext
+                multiline:False
+                color: (0,0,0,0)
+                font_size: '20'
+                pos_hint: {'center_x':0.5}
+                size_hint:(0.5,1)
+
+
 
             Button:
                 text: "Back to the Main Page"
                 on_release:
                     root.manager.current = "mainPage"
                     root.manager.transition.direction = "right"
+                    fileSelectedtxt.text = ""
+                    startPagePDFtext.text = ""
+                    endPagePDFtext.text = ""
+                    checkbox.active = False
+                    fileChooser.selection = ""
+
             Button:
-                text: "Summarize"
+                text: "Extract Text"
+                on_press: root.selectedFile(checkbox.active, fileChooser.selection, startPagePDFtext.text, endPagePDFtext.text)
                 on_release:
                     root.manager.current = "textPage"
                     root.manager.transition.direction = "left"
+                    fileSelectedtxt.text = ""
+                    startPagePDFtext.text = ""
+                    endPagePDFtext.text = ""
+                    checkbox.active = False
+                    fileChooser.selection = ""
+            Label:
+                text: "Please check this box if what you selected is a video --> "
+                canvas.before:
+                    Color:
+                        rgba:(1, 1, 1,1)
+                    RoundedRectangle:
+                        size: self.size
+                        pos: self.pos
+                        radius: [30]
+                size_hint_y:None
+                height: 50
+                width: 80
+                bold: True
+                color: (0,0,0)
+                pos_hint: {'center_x':0.5}
+                size_hint:(0.5,1)
+
+            CheckBox:
+                id: checkbox
+                color: (1,1,1,1)
+                #on_active: root.playVideo(self)
+                pos_hint: {'center_x':0.5}
+                size_hint:(0.5,1)
+
 
 
 ############################################################################################################################
@@ -310,7 +405,7 @@ PageManager:
 
 
         Button:
-            text: "Summarize"
+            text: "Extract Text from URL"
             on_release:
                 root.manager.current = "textPage"
                 root.manager.transition.direction = "left"

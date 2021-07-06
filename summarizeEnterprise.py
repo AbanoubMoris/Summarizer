@@ -1,18 +1,18 @@
 from kivy.app import App
-from kivy.uix.widget import Widget  # used to work with box layout
-from kivy.properties import StringProperty, \
-    ObjectProperty  # used to pass link the elements in the .kv file to the attributes in the code
 from kivy.lang import Builder  # used to work with builder and apply any design file
 from kivy.core.window import Window  # used to change the color of the back ground
 from kivy.uix.screenmanager import ScreenManager, Screen  # used to apply multiple screens
 
-import SummarizeFunction
-from webScraping import ReadFromWebSite
-from ReadDocument import ReadingFromPDF
+
+from ReadDocument import ReadDocument
+from SummarizeFunction import Summarization
+from VideoCaptions.Video2Text import VideoCaptions
 from wordcounter.wordcounter import WordCounter
 
 
 # building different pages
+from webScraping import webScraping
+
 running_app = App.get_running_app()
 
 
@@ -32,13 +32,10 @@ class TextPage(Screen):
 
     ##########################################################
 
-    def test(self):
-        # print(self.text)
-        # # self.ids.userWrittenText.text = "Hey we are here"
-        # self.ids.userWrittenText.text = self.text
-        # self.ids.userWrittenText.text = myText
+    def Summarize(self):
         print("printed: " + self.ids.userWrittenText.text)
-        summarized_text = SummarizeFunction.Summarize(self.ids.userWrittenText.text, self.ids.slider.value)
+        summarizer = Summarization()
+        summarized_text = summarizer.Summarize(self.ids.userWrittenText.text, self.ids.slider.value)
         self.ids.summarized_label_id.text = summarized_text
 
         word_counter = WordCounter(self.ids.userWrittenText.text, delimiter=' ')
@@ -59,18 +56,38 @@ class TextPage(Screen):
 
 class FilePage(Screen):
 
-    def selectedFile(self, filePath):
-        self.ids.fileSelectedtxt.text = filePath[0]
+    def viewselecteFile(self, filePath):
+        try:
+            self.ids.fileSelectedtxt.text = filePath[0]
+        except:
+            self.ids.fileSelectedtxt.text = ""
+
+    def selectedVideo(self, filePath):
+        captions = VideoCaptions()
+        captions.getChunkCaption(filePath)
+        print(captions.WriteCaptionInFile())
         layout = self.manager.get_screen('textPage').layout
-        # print("test: "+ReadingFromPDF(filename=filePath[0], f=1, l=4))
-        layout.text = ReadingFromPDF(filename=filePath[0], f=50, l=52)
+        layout.text = captions.WriteCaptionInFile()
+
+    def selectedFile(self, ischeckboxActive, filePath, first_page, last_page):
+        if ischeckboxActive == False:
+            self.ids.fileSelectedtxt.text = filePath[0]
+            first_page = self.ids.startPagePDFtext.text
+            last_page = self.ids.endPagePDFtext.text
+            layout = self.manager.get_screen('textPage').layout
+            # print("test: "+ReadingFromPDF(filename=filePath[0], f=1, l=4))
+            docReader = ReadDocument()
+            layout.text = docReader.ReadingFromPDF(filename=filePath[0], firstPage=first_page, lastPage=last_page)
+        else:
+            self.selectedVideo(filePath)
 
 
 class UrlPage(Screen):
     def UserUrl(self, url):
         self.ids.urltxt.text = url
         layout = self.manager.get_screen('textPage').layout
-        layout.text = ReadFromWebSite(WEBSITE=url)
+        webScraper = webScraping()
+        layout.text = webScraper.ReadFromWebSite(URL=url)
 
     pass
 
@@ -96,13 +113,6 @@ class SummarizeEnterprise(App):
     def build(self):
         # setting the color of the background
         Window.clearcolor = (52 / 255.0, 73 / 255.0, 94 / 255.0, 1)
-        #####################################################
-        # sm = ScreenManager()
-        # sm.add_widget(MainPage())
-        # sm.add_widget(TextPage(FileName_or_URL="", TypeTextRecieved=0))
-        # sm.add_widget(FilePage())
-        # sm.add_widget(UrlPage())
-
         return TheApp  # sm
 
 
